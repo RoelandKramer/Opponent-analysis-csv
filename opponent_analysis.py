@@ -16,30 +16,56 @@ from pathlib import Path
 # 1. CONFIG & TEAM MAPPING
 # ==========================================
 TEAM_NAME_MAPPING = {
-    "ADO Den Haag": "ADO Den Haag", "Almere City FC": "Almere City FC", "De Graafschap": "De Graafschap",
-    "Eindhoven": "Eindhoven", "FC Den Bosch": "FC Den Bosch", "FC Dordrecht": "FC Dordrecht",
-    "FC Emmen": "FC Emmen", "Helmond Sport": "Helmond Sport", "Jong AZ": "Jong AZ",
-    "Jong Ajax": "Jong Ajax", "Jong FC Utrecht": "Jong FC Utrecht", "Jong PSV": "Jong PSV",
-    "MVV Maastricht": "MVV Maastricht", "RKC Waalwijk": "RKC Waalwijk", "Roda JC Kerkrade": "Roda JC Kerkrade",
-    "SC Cambuur": "SC Cambuur", "TOP Oss": "TOP Oss", "VVV-Venlo": "VVV-Venlo",
-    "Vitesse": "Vitesse", "Willem II": "Willem II",
-    "Almere City": "Almere City FC", "Den Bosch": "FC Den Bosch", "Dordrecht": "FC Dordrecht",
-    "AZ Alkmaar U23": "Jong AZ", "Ajax Amsterdam U21": "Jong Ajax", "Jong Utrecht": "Jong FC Utrecht",
-    "Jong PSV Eindhoven": "Jong PSV", "MVV": "MVV Maastricht", "VVV Venlo": "VVV-Venlo",
-    "VVV-Venlo VVV-Venlo": "VVV-Venlo"
+    # --- TARGET NAMES (The clean ones we want) ---
+    "ADO Den Haag": "ADO Den Haag", 
+    "Almere City FC": "Almere City FC", 
+    "De Graafschap": "De Graafschap",
+    "Eindhoven": "Eindhoven", 
+    "FC Den Bosch": "FC Den Bosch", 
+    "FC Dordrecht": "FC Dordrecht",
+    "FC Emmen": "FC Emmen", 
+    "Helmond Sport": "Helmond Sport", 
+    "Jong AZ": "Jong AZ",
+    "Jong Ajax": "Jong Ajax", 
+    "Jong FC Utrecht": "Jong FC Utrecht", 
+    "Jong PSV": "Jong PSV",
+    "MVV Maastricht": "MVV Maastricht", 
+    "RKC Waalwijk": "RKC Waalwijk", 
+    "Roda JC Kerkrade": "Roda JC Kerkrade",
+    "SC Cambuur": "SC Cambuur", 
+    "TOP Oss": "TOP Oss", 
+    "VVV-Venlo": "VVV-Venlo",
+    "Vitesse": "Vitesse", 
+    "Willem II": "Willem II",
+
+    # --- ALIASES (Map these TO the targets above) ---
+    "Almere City": "Almere City FC", 
+    "Den Bosch": "FC Den Bosch", 
+    "Dordrecht": "FC Dordrecht",
+    "AZ Alkmaar U23": "Jong AZ", 
+    "Ajax Amsterdam U21": "Jong Ajax", 
+    "Jong Utrecht": "Jong FC Utrecht",
+    "Jong PSV Eindhoven": "Jong PSV", 
+    "MVV": "MVV Maastricht", 
+    "VVV Venlo": "VVV-Venlo",
+    "VVV-Venlo VVV-Venlo": "VVV-Venlo",
+    "NOT_APPLICABLE": None  # Explicitly ignore this
 }
 
 def get_canonical_team(raw_name: Any) -> Optional[str]:
     if not isinstance(raw_name, str): return None
-    return TEAM_NAME_MAPPING.get(raw_name.strip())
+    clean_name = raw_name.strip()
+    return TEAM_NAME_MAPPING.get(clean_name)
 
 def extract_all_teams(json_data: Dict[str, Any]) -> List[str]:
+    """Returns a sorted list of UNIQUE canonical names."""
     teams = set()
     matches = json_data.get("matches", [])
     for match in matches:
         for ev in match.get("corner_events", []):
             canon = get_canonical_team(ev.get("teamName"))
-            if canon: teams.add(canon)
+            if canon: 
+                teams.add(canon)
     return sorted(list(teams))
 
 # ==========================================
@@ -138,14 +164,21 @@ def _is_true_corner_start(ev):
 def _valid_zone_for_shot_lists(zone_val):
     return zone_val and str(zone_val).strip() != "" and zone_val != "Short_Corner_Zone"
 
+def _flip_name(name):
+    parts = [p for p in name.strip().split() if p]
+    if len(parts) == 2: return f"{parts[1]} {parts[0]}"
+    return name.strip()
+
 # ==========================================
-# 3. ANALYSIS LOGIC
+# 3. ANALYSIS LOGIC (With New Table Format)
 # ==========================================
 
 def _build_corner_taker_tables(left_corners, right_corners, min_corners=5):
     """
     Shows 'Most Popular', '2nd', '3rd' zones instead of percentages.
     Filters out 'Unassigned' from the ranking.
+    Renames Short_Corner_Zone to Short.
+    Renames header to Cross Succ. %.
     """
     def _one_side_table(corners, side_name):
         total_by_player = Counter()
@@ -175,19 +208,25 @@ def _build_corner_taker_tables(left_corners, right_corners, min_corners=5):
             
             # --- TOP 3 ZONES LOGIC ---
             counts = zone_counts[player]
+            # Exclude Unassigned from the "Top Choices" list
             valid_zones = [(z, c) for z, c in counts.items() if z != "Unassigned"]
+            # Sort by Count DESC, then Name ASC
             valid_zones.sort(key=lambda x: (-x[1], x[0]))
             
             def fmt_zone(idx):
                 if idx >= len(valid_zones): return "-"
                 zn, cnt = valid_zones[idx]
                 pct = round((cnt / total) * 100.0, 0)
-                return f"{zn} ({int(pct)}%)"
+                
+                # RENAME 'Short_Corner_Zone' to 'Short'
+                display_zn = "Short" if zn == "Short_Corner_Zone" else zn
+                
+                return f"{display_zn} ({int(pct)}%)"
 
             rows.append({
                 "Player": player,
                 "Corners": int(total),
-                "Succ. %": f"{rate}%" if not pd.isna(rate) else "-",
+                "Cross Succ. %": f"{rate}%" if not pd.isna(rate) else "-", # RENAMED HERE
                 "1st Choice": fmt_zone(0),
                 "2nd Choice": fmt_zone(1),
                 "3rd Choice": fmt_zone(2)
@@ -201,11 +240,8 @@ def _build_corner_taker_tables(left_corners, right_corners, min_corners=5):
         "right": _one_side_table(right_corners, "right")
     }
 
-def process_corner_data(json_data, team_aliases):
-    # team_aliases passed here is typically a list, but we take the first as canonical
-    # Assuming app passes the canonical name
-    target_canon = get_canonical_team(team_aliases[0]) if isinstance(team_aliases, list) else get_canonical_team(team_aliases)
-
+def process_corner_data(json_data, selected_team_name):
+    # selected_team_name passed from app is already the CANONICAL name
     matches = json_data.get("matches", [])
     opponent_left_side, opponent_right_side = [], []
     own_left_side, own_right_side = [], []
@@ -218,17 +254,19 @@ def process_corner_data(json_data, team_aliases):
         events = match.get("corner_events", [])
         if not events: continue
 
-        # Filter by team
+        # Filter: Did this team play in this match?
         match_teams = set()
         for ev in events:
             c = get_canonical_team(ev.get("teamName"))
             if c: match_teams.add(c)
-        if target_canon not in match_teams: continue
+        
+        if selected_team_name not in match_teams: continue
         
         used_matches += 1
         TOP_X, BOTTOM_X, LEFT_Y, RIGHT_Y = _resolve_pitch_bounds(match, events)
         zones_TL, zones_BR, zones_TR, zones_BL = build_zones(TOP_X, BOTTOM_X, LEFT_Y, RIGHT_Y)
         sequences_by_id = defaultdict(list)
+        
         for ev in events: 
             if ev.get("sequenceId"): sequences_by_id[ev["sequenceId"]].append(ev)
 
@@ -236,7 +274,8 @@ def process_corner_data(json_data, team_aliases):
             if not _is_true_corner_start(e): continue
             
             raw_team = e.get("teamName", "")
-            is_own = (get_canonical_team(raw_team) == target_canon)
+            # Canonical check handles aliases like "Dordrecht" -> "FC Dordrecht"
+            is_own = (get_canonical_team(raw_team) == selected_team_name)
             
             sx, sy, ex, ey = e.get("startPosXM"), e.get("startPosYM"), e.get("endPosXM"), e.get("endPosYM")
             if None in (sx, sy, ex, ey): continue
@@ -282,7 +321,7 @@ def process_corner_data(json_data, team_aliases):
         tot = sum(c.values())
         return {k: (v/tot)*100 for k,v in c.items()} if tot else {}
 
-    # Min corners updated to 5
+    # Updated min_corners to 5
     taker_tables = _build_corner_taker_tables(own_left_side, own_right_side, min_corners=5)
 
     return {
@@ -323,7 +362,7 @@ def plot_shots_defensive(img_file, polygons, shot_pct, total_by_zone, shot_seqid
             ax.text(cx, cy, f"{len(shot_seqids_by_zone.get(zone, set()))}/{total_by_zone.get(zone, 0)}",
                     fontsize=22, color="white", weight="bold", ha="center", va="center",
                     path_effects=[PathEffects.withStroke(linewidth=3, foreground="black")])
-    # No title
+    # No title (handled by Streamlit subheader)
     return fig
 
 def plot_percent_attacking(img_file, polygons, centers, pct_by_zone, title):
@@ -340,7 +379,7 @@ def plot_percent_attacking(img_file, polygons, centers, pct_by_zone, title):
         if zone in pct_by_zone:
             ax.text(x, y, f"{pct_by_zone[zone]:.1f}%", fontsize=22, color="white", weight="bold", ha="center", va="center",
                     path_effects=[PathEffects.withStroke(linewidth=3, foreground="black")])
-    # No title
+    # No title (handled by Streamlit subheader)
     return fig
 
 # ==========================================
@@ -377,7 +416,7 @@ def get_visualization_coords():
         "CA1": [(505, 285), (660, 285), (660, 425), (505, 425)],
         "CA2": [(664, 285), (822, 285), (822, 425), (664, 425)],
         "CA3": [(972, 285), (822, 285), (822, 425), (972, 425)],
-        "Edge_Zone": [(502, 425), (972, 425), (972, 700), (502, 700)],
+        "Edge_Zone": [(502, 425), (960, 425), (960, 690), (502, 690)],
     }
     att_centers_L = {
         "GA1": (590, 245), "GA2": (745, 250), "GA3": (900, 250),
