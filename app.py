@@ -40,7 +40,7 @@ if check_password():
     # --- CONFIGURATION ---
     st.set_page_config(page_title="Opponent Analysis - Set Pieces", layout="wide")
     
-    DATA_PATH = "data/corner_events_all_matches2.json"
+    DATA_PATH = "data/corner_events_all_matches.json"
     
     IMG_PATHS = {
         "def_L": "images/no_names_left.png",
