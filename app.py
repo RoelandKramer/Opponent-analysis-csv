@@ -195,14 +195,15 @@ if check_password():
             pctiles = build_percentiles_for_team(league_stats, selected_team, "left")
             st.pyplot(
                 oa.plot_shots_attacking_with_percentile(
-                    get_img_path("att_L"),
-                    viz_config["att_L"],
-                    viz_config["att_shot_centers_L"],
-                    pct_z,
-                    tot_z,
-                    shot_z,
-                    pctiles,
-                )
+                get_img_path("def_L"),
+                viz_config["def_L"],
+                pct_z,
+                tot_z,
+                shot_z,
+                pctiles,
+                min_zone_corners=4,
+                font_size=16,
+            )
             )
 
         with col2:
@@ -211,14 +212,15 @@ if check_password():
             pctiles = build_percentiles_for_team(league_stats, selected_team, "right")
             st.pyplot(
                 oa.plot_shots_attacking_with_percentile(
-                    get_img_path("att_R"),
-                    viz_config["att_R"],
-                    viz_config["att_shot_centers_R"],
-                    pct_z,
-                    tot_z,
-                    shot_z,
-                    pctiles,
-                )
+                get_img_path("def_R"),
+                viz_config["def_R"],
+                pct_z,
+                tot_z,
+                shot_z,
+                pctiles,
+                min_zone_corners=4,
+                font_size=16,
+            )
             )
 
         # --- ROW 2: TABLES ---
