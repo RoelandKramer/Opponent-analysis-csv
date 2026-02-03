@@ -190,7 +190,7 @@ if check_password():
         # --- NEW ROW: ATTACKING -> SHOT PER ZONE (WITH KKD PERCENTILES) ---
         col1, col2 = st.columns(2)
         with col1:
-            st.subheader("how many attacking corners let to a shot?")
+            st.subheader("How many attacking corners let to a shot? (Left Side)")
             tot_z, shot_z, pct_z = results["attacking_shots"]["left"]
             pctiles = build_percentiles_for_team(league_stats, selected_team, "left")
             st.pyplot(
@@ -206,7 +206,7 @@ if check_password():
             )
 
         with col2:
-            st.subheader("how many attacking corners let to a shot?")
+            st.subheader("How many attacking corners let to a shot? (Right Side)")
             tot_z, shot_z, pct_z = results["attacking_shots"]["right"]
             pctiles = build_percentiles_for_team(league_stats, selected_team, "right")
             st.pyplot(
