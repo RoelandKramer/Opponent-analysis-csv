@@ -611,21 +611,22 @@ def plot_percent_attacking(img_file, polygons, centers, pct_by_zone, title):
             )
     return fig
 
+
 def plot_shots_attacking_with_percentile(
     img_file,
     polygons,
-    centers,
     shot_pct_by_zone: Dict[str, float],
     total_by_zone: Counter,
     shot_by_zone: Counter,
     percentile_by_zone: Dict[str, Optional[int]],
     min_zone_corners: int = 4,
+    font_size: int = 18,
 ):
     fig, ax = plt.subplots(figsize=(14, 10))
     ax.imshow(_load_bg(img_file))
     ax.axis("off")
 
-    # Only consider zones with enough samples for coloring
+    # Normalize only across eligible zones (>= min_zone_corners)
     eligible_vals = [
         float(shot_pct_by_zone[z])
         for z in shot_pct_by_zone
@@ -634,27 +635,27 @@ def plot_shots_attacking_with_percentile(
     norm = plt.Normalize(min(eligible_vals) if eligible_vals else 0, max(eligible_vals) if eligible_vals else 1)
     cmap = cm.get_cmap("Reds")
 
-    # Color only eligible zones
     for zone, poly in polygons.items():
         tot = int(total_by_zone.get(zone, 0))
         if tot < min_zone_corners:
             continue
-        if zone in shot_pct_by_zone:
-            ax.add_patch(
-                Polygon(
-                    poly,
-                    closed=True,
-                    facecolor=cmap(norm(float(shot_pct_by_zone[zone]))),
-                    edgecolor="none",
-                    alpha=0.55,
-                )
-            )
-
-    # Print text only eligible zones
-    for zone, (x, y) in centers.items():
-        tot = int(total_by_zone.get(zone, 0))
-        if tot < min_zone_corners:
+        if zone not in shot_pct_by_zone:
             continue
+
+        # Color fill
+        ax.add_patch(
+            Polygon(
+                poly,
+                closed=True,
+                facecolor=cmap(norm(float(shot_pct_by_zone[zone]))),
+                edgecolor="none",
+                alpha=0.55,
+            )
+        )
+
+        # Center text exactly like defensive plots
+        xs, ys = [p[0] for p in poly], [p[1] for p in poly]
+        cx, cy = (min(xs) + max(xs)) / 2 - 5, (min(ys) + max(ys)) / 2
 
         shots = int(shot_by_zone.get(zone, 0))
         p = percentile_by_zone.get(zone)
@@ -662,10 +663,10 @@ def plot_shots_attacking_with_percentile(
         txt = f"{shots} / {tot}\n{p_line}\nKKD"
 
         ax.text(
-            x,
-            y,
+            cx,
+            cy,
             txt,
-            fontsize=15,
+            fontsize=font_size,
             color="white",
             weight="bold",
             ha="center",
@@ -763,7 +764,7 @@ def get_visualization_coords():
 
     att_shot_centers_L["Edge_Zone"] = (745, 580)
     att_shot_centers_L["Front_Zone"] = (350, 410)
-    att_shot_centers_L["Back_Zone"] = (1120, 410)
+    att_shot_centers_L["Back_Zone"] = (1120, 410)R
     att_shot_centers_L["Short_Corner_Zone"] = (130, 410)
 
     
