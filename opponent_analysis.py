@@ -751,6 +751,9 @@ def get_visualization_coords():
         "Front_Zone": (1120, 380),
         "Short_Corner_Zone": (1355, 400),
     }
+
+    att_shot_centers_L = dict(att_centers_L)
+    att_shot_centers_R = dict(att_centers_R)
     return {
         "def_L": def_L,
         "def_R": def_R,
@@ -758,4 +761,7 @@ def get_visualization_coords():
         "att_centers_L": att_centers_L,
         "att_R": att_R,
         "att_centers_R": att_centers_R,
+        "att_shot_centers_L": att_shot_centers_L,
+        "att_shot_centers_R": att_shot_centers_R,
     }
+
