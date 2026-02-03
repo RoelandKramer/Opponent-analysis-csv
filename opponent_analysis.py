@@ -753,35 +753,35 @@ def get_visualization_coords():
         "Short_Corner_Zone": (1355, 400),
     }
 
-    att_shot_centers_L = dict(att_centers_L)
-    att_shot_centers_L["GA1"] = (590, 215)
-    att_shot_centers_L["GA2"] = (745, 215)
-    att_shot_centers_L["GA3"] = (900, 215)
+    # att_shot_centers_L = dict(att_centers_L)
+    # att_shot_centers_L["GA1"] = (590, 215)
+    # att_shot_centers_L["GA2"] = (745, 215)
+    # att_shot_centers_L["GA3"] = (900, 215)
     
-    att_shot_centers_L["GA1"] = (590, 365)
-    att_shot_centers_L["GA2"] = (745, 365)
-    att_shot_centers_L["GA3"] = (900, 365)
+    # att_shot_centers_L["GA1"] = (590, 365)
+    # att_shot_centers_L["GA2"] = (745, 365)
+    # att_shot_centers_L["GA3"] = (900, 365)
 
-    att_shot_centers_L["Edge_Zone"] = (745, 580)
-    att_shot_centers_L["Front_Zone"] = (350, 410)
-    att_shot_centers_L["Back_Zone"] = (1120, 410)R
-    att_shot_centers_L["Short_Corner_Zone"] = (130, 410)
+    # att_shot_centers_L["Edge_Zone"] = (745, 580)
+    # att_shot_centers_L["Front_Zone"] = (350, 410)
+    # att_shot_centers_L["Back_Zone"] = (1120, 410)R
+    # att_shot_centers_L["Short_Corner_Zone"] = (130, 410)
 
     
-    att_shot_centers_R = dict(att_centers_R)
+    # att_shot_centers_R = dict(att_centers_R)
 
-    att_shot_centers_R["GA1"] = (900, 215)
-    att_shot_centers_R["GA2"] = (745, 215)
-    att_shot_centers_R["GA3"] = (590, 215)
+    # att_shot_centers_R["GA1"] = (900, 215)
+    # att_shot_centers_R["GA2"] = (745, 215)
+    # att_shot_centers_R["GA3"] = (590, 215)
     
-    att_shot_centers_R["GA1"] = (900, 365)
-    att_shot_centers_R["GA2"] = (745, 365)
-    att_shot_centers_R["GA3"] = (590, 365)
+    # att_shot_centers_R["GA1"] = (900, 365)
+    # att_shot_centers_R["GA2"] = (745, 365)
+    # att_shot_centers_R["GA3"] = (590, 365)
 
-    att_shot_centers_R["Edge_Zone"] = (745, 580)
-    att_shot_centers_R["Front_Zone"] = (1120, 410)
-    att_shot_centers_R["Back_Zone"] = (350, 410)
-    att_shot_centers_R["Short_Corner_Zone"] = (1355, 410)
+    # att_shot_centers_R["Edge_Zone"] = (745, 580)
+    # att_shot_centers_R["Front_Zone"] = (1120, 410)
+    # att_shot_centers_R["Back_Zone"] = (350, 410)
+    # att_shot_centers_R["Short_Corner_Zone"] = (1355, 410)
 
     return {
         "def_L": def_L,
@@ -790,7 +790,5 @@ def get_visualization_coords():
         "att_centers_L": att_centers_L,
         "att_R": att_R,
         "att_centers_R": att_centers_R,
-        "att_shot_centers_L": att_shot_centers_L,
-        "att_shot_centers_R": att_shot_centers_R,
     }
 
