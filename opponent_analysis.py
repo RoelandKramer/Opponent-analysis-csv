@@ -646,8 +646,9 @@ def plot_shots_attacking_with_percentile(
             continue
         shots = int(shot_by_zone.get(zone, 0))
         p = percentile_by_zone.get(zone)
-        p_line = f"Top {int(p)}% KKD" if isinstance(p, int) else "Top -% KKD"
-        txt = f"{shots} / {tot}\n{p_line}"
+        p_line = f"Top {int(p)}%" if isinstance(p, int) else "Top -%"
+        txt = f"{shots} / {tot}\n{p_line}\nKKD"
+
 
         ax.text(
             x,
