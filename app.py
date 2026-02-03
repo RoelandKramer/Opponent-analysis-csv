@@ -71,24 +71,31 @@ def _percentile_rank(values, value):
     leq = sum(1 for v in values if v <= value)
     return int(round((leq / n) * 100))
 
-def build_percentiles_for_team(league_stats, team_name, side):
+def build_percentiles_for_team(league_stats, team_name, side, min_zone_corners: int = 4):
     team_side = league_stats.get(team_name, {}).get(side, {})
     percentiles = {}
 
-    # for each zone that team has, compute distribution among teams for that (side, zone)
     for zone, d in team_side.items():
+        team_total = int(d.get("total", 0))
+        if team_total < min_zone_corners:
+            # Do not show percentile if this team has too few corners in this zone
+            continue
+
         team_pct = float(d.get("pct", 0.0))
+
         dist = []
-        for t, side_map in league_stats.items():
+        for _, side_map in league_stats.items():
             zd = side_map.get(side, {}).get(zone)
             if not zd:
                 continue
-            if int(zd.get("total", 0)) <= 0:
+            if int(zd.get("total", 0)) < min_zone_corners:
                 continue
             dist.append(float(zd.get("pct", 0.0)))
+
         percentiles[zone] = _percentile_rank(dist, team_pct)
 
     return percentiles
+
 
 # --- 2. MAIN APP LOGIC ---
 if check_password():
